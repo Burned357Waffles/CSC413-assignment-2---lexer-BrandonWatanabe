@@ -16,7 +16,7 @@ public class Lexer {
   private SourceReader source;
 
   // positions in line of current token
-  private int startPosition, endPosition;
+  private int startPosition, endPosition, lineNumber;
 
   /**
    *  Lexer constructor
@@ -37,10 +37,11 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the token ends
    *  @return the Token; either an id or one for the reserved words
    */
-  public Token newIdToken( String id, int startPosition, int endPosition ) {
+  public Token newIdToken( String id, int startPosition, int lineNumber, int endPosition ) {
     return new Token(
       startPosition,
       endPosition,
+      lineNumber,
       Symbol.symbol( id, Tokens.Identifier )
     );
   }
@@ -56,10 +57,11 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the int ends
    *  @return the int Token
    */
-  public Token newNumberToken( String number, int startPosition, int endPosition) {
+  public Token newNumberToken( String number, int startPosition, int lineNumber, int endPosition) {
     return new Token(
       startPosition,
       endPosition,
+      lineNumber,
       Symbol.symbol( number, Tokens.INTeger )
     );
   }
@@ -72,7 +74,7 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the token ends
    *  @return the Token just found
    */
-  public Token makeToken( String s, int startPosition, int endPosition ) {
+  public Token makeToken( String s, int startPosition, int lineNumber, int endPosition ) {
     // filter comments
     if( s.equals("//") ) {
       try {
@@ -97,7 +99,7 @@ public class Lexer {
       return nextToken();
     }
 
-    return new Token( startPosition, endPosition, sym );
+    return new Token( startPosition, endPosition, lineNumber, sym );
   }
 
   /**
@@ -126,6 +128,7 @@ public class Lexer {
 
     startPosition = source.getPosition();
     endPosition = startPosition - 1;
+    lineNumber = source.getLineno();
 
     if( Character.isJavaIdentifierStart( ch )) {
       // return tokens for ids and reserved words
@@ -141,7 +144,7 @@ public class Lexer {
         atEOF = true;
       }
 
-      return newIdToken( id, startPosition, endPosition );
+      return newIdToken( id, startPosition, endPosition, lineNumber );
     }
 
     if( Character.isDigit( ch )) {
@@ -158,7 +161,7 @@ public class Lexer {
         atEOF = true;
       }
 
-      return newNumberToken( number, startPosition, endPosition );
+      return newNumberToken( number, startPosition, endPosition, lineNumber );
     }
 
     // At this point the only tokens to check for are one or two
@@ -178,13 +181,13 @@ public class Lexer {
       sym = Symbol.symbol( op, Tokens.BogusToken );
       if (sym == null) {
         // it must be a one char token
-        return makeToken( charOld, startPosition, endPosition );
+        return makeToken( charOld, startPosition, endPosition, lineNumber );
       }
 
       endPosition++;
       ch = source.read();
 
-      return makeToken( op, startPosition, endPosition );
+      return makeToken( op, startPosition, endPosition, lineNumber );
     } catch( Exception e ) { /* no-op */ }
 
     atEOF = true;
@@ -192,30 +195,47 @@ public class Lexer {
       op = charOld;
     }
 
-    return makeToken( op, startPosition, endPosition );
+    return makeToken( op, startPosition, endPosition, lineNumber );
   }
 
-/*
-  public static void main(String args[]) {
+  public void printOutput (Lexer lex)
+  {
+
+  }
+
+  public static void main(String [] args)
+  {
     Token token;
 
-    try {
-      Lexer lex = new Lexer( "simple.x" );
+    if (args.length != 1)
+    {
+      System.out.println("usage: java lexer.Lexer filename.x");
+    }
 
-      while( true ) {
-        token = lex.nextToken();
+    else
+    {
+      try
+      {
+        Lexer lex = new Lexer(args[0]);
 
-        String p = "L: " + token.getLeftPosition() +
-          " R: " + token.getRightPosition() + "  " +
-          TokenType.tokens.get(token.getKind()) + " ";
+        while (!lex.atEOF)
+        {
+          token = lex.nextToken();
 
-        if ((token.getKind() == Tokens.Identifier) || (token.getKind() == Tokens.INTeger)) {
-          p += token.toString();
+          String p = "L: " + token.getLeftPosition() +
+                  " R: " + token.getRightPosition() + "  Line Number:" + token.getLineNumber() + " " +
+                  TokenType.tokens.get(token.getKind()) + " ";
+
+          if ((token.getKind() == Tokens.Identifier) || (token.getKind() == Tokens.INTeger)) {
+            p += token.toString();
+          }
+
+          System.out.println(p + ": " + lex.source.getLineno());
         }
-
-        System.out.println( p + ": " + lex.source.getLineno() );
+      } catch (Exception e)
+      {
+      System.out.println("!!EXCEPTION THROWN!!");
       }
-    } catch (Exception e) {}
+    }
   }
-*/
 }
