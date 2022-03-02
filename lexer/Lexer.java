@@ -37,7 +37,7 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the token ends
    *  @return the Token; either an id or one for the reserved words
    */
-  public Token newIdToken( String id, int startPosition, int lineNumber, int endPosition ) {
+  public Token newIdToken( String id, int startPosition, int endPosition, int lineNumber ) {
     return new Token(
       startPosition,
       endPosition,
@@ -57,7 +57,7 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the int ends
    *  @return the int Token
    */
-  public Token newNumberToken( String number, int startPosition, int lineNumber, int endPosition) {
+  public Token newNumberToken( String number, int startPosition, int endPosition, int lineNumber) {
     return new Token(
       startPosition,
       endPosition,
@@ -74,7 +74,7 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the token ends
    *  @return the Token just found
    */
-  public Token makeToken( String s, int startPosition, int lineNumber, int endPosition ) {
+  public Token makeToken( String s, int startPosition, int endPosition, int lineNumber ) {
     // filter comments
     if( s.equals("//") ) {
       try {
@@ -234,7 +234,6 @@ public class Lexer {
         }
       } catch (Exception e)
       {
-      System.out.println("!!EXCEPTION THROWN!!");
       }
     }
   }
