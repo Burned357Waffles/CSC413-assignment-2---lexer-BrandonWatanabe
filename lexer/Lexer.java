@@ -221,16 +221,11 @@ public class Lexer {
         while (!lex.atEOF)
         {
           token = lex.nextToken();
+          
+          System.out.printf("%-11s left:%-8d right:%-8d line:%-8d %s \n", token.toString(),
+                  token.getLeftPosition(), token.getRightPosition(),
+                  token.getLineNumber(), token.getKind());
 
-          String p = "L: " + token.getLeftPosition() +
-                  " R: " + token.getRightPosition() + "  Line Number:" + token.getLineNumber() + " " +
-                  TokenType.tokens.get(token.getKind()) + " ";
-
-          if ((token.getKind() == Tokens.Identifier) || (token.getKind() == Tokens.INTeger)) {
-            p += token.toString();
-          }
-
-          System.out.println(p + ": " + lex.source.getLineno());
         }
       } catch (Exception e)
       {
