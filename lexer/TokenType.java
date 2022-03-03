@@ -5,7 +5,6 @@ package lexer;
  *  it contains the table of mappings from token
  *  constants to their Symbols
 */
-
 public class TokenType {
    public static java.util.HashMap<Tokens,Symbol> tokens = new java.util.HashMap<Tokens,Symbol>();
    public TokenType() {
@@ -45,5 +44,7 @@ public class TokenType {
      tokens.put(Tokens.Begin, Symbol.symbol("begin",Tokens.Begin));
      tokens.put(Tokens.End, Symbol.symbol("end",Tokens.End));
      tokens.put(Tokens.In, Symbol.symbol("in",Tokens.In));
+     tokens.put(Tokens.Utf16String, Symbol.symbol("utf16string",Tokens.Utf16String));
+     tokens.put(Tokens.TimestampType, Symbol.symbol("timestamp",Tokens.TimestampType));
    }
 }
