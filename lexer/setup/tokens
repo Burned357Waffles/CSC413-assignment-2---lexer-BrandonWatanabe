@@ -34,3 +34,5 @@ Hash #
 Begin begin
 End end
 In in
+Utf16String utf16string
+TimestampType timestamp
