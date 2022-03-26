@@ -283,7 +283,7 @@ public class Lexer {
           ch = source.read();
         } while (Character.isDigit(ch));
 
-        if (number.length() == 4) { //hello
+        if (number.length() == 4) { //hello there
           if (Character.toString(ch).equals("~"))
           {
             endPosition++;
