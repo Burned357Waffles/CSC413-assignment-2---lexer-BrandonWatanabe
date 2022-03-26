@@ -12,5 +12,6 @@ public enum Tokens {
     Equal,NotEqual,Greater,GreaterEqual,Less,
     LessEqual,Plus,Minus,Or,And,
     Multiply,Divide,Comment,Hash,Begin,
-    End,In,Utf16String,TimestampType
+    End,In,Utf16String,Utf16StringLit,TimestampType,
+    TimestampLit
 }

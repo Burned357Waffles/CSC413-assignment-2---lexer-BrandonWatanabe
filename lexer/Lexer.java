@@ -1,5 +1,5 @@
 package lexer;
-
+import java.util.regex.*;
 /**
  *  The Lexer class is responsible for scanning the source file
  *  which is a stream of characters and returning a stream of
@@ -14,7 +14,7 @@ public class Lexer {
   // next character to process
   private char ch;
   private SourceReader source;
-
+  private boolean bogusToken;
   // positions in line of current token
   private int startPosition, endPosition, lineNumber;
 
@@ -66,6 +66,29 @@ public class Lexer {
     );
   }
 
+  public Token newUtf16StringLitToken(String utf16string, int startPosition, int endPosition, int lineNumber)
+  {
+    if (bogusToken){
+      return nextToken();
+    }
+
+    return new Token(
+            startPosition,
+            endPosition,
+            lineNumber,
+            Symbol.symbol( utf16string, Tokens.Utf16StringLit )
+    );
+  }
+
+  public Token newTimestampToken(String timestamp, int startPosition, int endPosition, int lineNumber)
+  {
+    return new Token(
+            startPosition,
+            endPosition,
+            lineNumber,
+            Symbol.symbol( timestamp, Tokens.TimestampLit )
+    );
+  }
   /**
    *  build the token for operators (+ -) or separators (parens, braces)
    *  filter out comments which begin with two slashes
@@ -100,6 +123,89 @@ public class Lexer {
     }
 
     return new Token( startPosition, endPosition, lineNumber, sym );
+  }
+
+  public String readFourUtf16String(String utf)
+  {
+    try // check for the u
+    {
+      endPosition++;
+      utf += ch;
+      ch = source.read();
+      if (Character.toString(ch).equals("u"))
+      {
+        endPosition++;
+        utf += ch;
+        ch = source.read();
+      }
+      else
+      {
+        throw new Exception("not utf16string");
+      }
+    }
+    catch (Exception e)
+    {
+      atEOF = true;
+    }
+
+    try // check for the 4 hex
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        if (Pattern.matches("[a-fA-F]", Character.toString(ch)) || Character.isDigit(ch))
+        {
+          endPosition++;
+          utf += ch;
+          ch = source.read();
+        }
+        else
+        {
+          endPosition++;
+          utf += ch;
+          Symbol sym = Symbol.symbol(utf, Tokens.BogusToken );
+
+          if( sym == null )
+          {
+            System.out.println("******** illegal character: " + utf);
+            atEOF = true;
+            bogusToken = true;
+          }
+        }
+      }
+    }
+    catch (Exception e)
+    {
+      atEOF = true;
+      return utf;
+    }
+    return utf;
+  }
+
+  public String addToString(String tokenString, int iterator)
+  {
+    try
+    {
+      for (int i = 0; i < iterator; i++)
+      {
+        if (Character.isDigit(ch))
+        {
+          endPosition++;
+          tokenString += ch;
+          ch = source.read();
+        }
+        else
+        {
+
+        }
+      }
+    }
+
+    catch (Exception e)
+    {
+      atEOF = true;
+    }
+
+    return  tokenString;
   }
 
   /**
@@ -147,20 +253,85 @@ public class Lexer {
       return newIdToken( id, startPosition, endPosition, lineNumber );
     }
 
-    if( Character.isDigit( ch )) {
+    // TODO add in timestamp and utf16string here
+
+    if (Character.toString(ch).equals("\\"))
+    {
+      // returns token for utf16strings
+      String utf = "";
+      utf += readFourUtf16String(utf);
+
+      if (Character.toString(ch).equals("\\"))
+      {
+        utf = readFourUtf16String(utf);
+      }
+
+      return newUtf16StringLitToken(utf, startPosition, endPosition, lineNumber);
+    }
+
+    if( Character.isDigit( ch ))
+    {
       // return number tokens
       String number = "";
 
-      try {
-        do {
+      try
+      {
+        do
+        {
           endPosition++;
           number += ch;
           ch = source.read();
-        } while( Character.isDigit( ch ));
+        } while (Character.isDigit(ch));
+
+        if (number.length() == 4)
+        {
+          if (Character.toString(ch).equals("~"))
+          {
+            endPosition++;
+            number += ch;
+            ch = source.read();
+          }
+          else
+          {
+
+          }
+          number = addToString(number, 2); // month
+
+          if (Character.toString(ch).equals("~"))
+          {
+            endPosition++;
+            number += ch;
+            ch = source.read();
+          }
+          number = addToString(number, 2); // day
+
+          if (Character.toString(ch).equals("~"))
+          {
+            endPosition++;
+            number += ch;
+            ch = source.read();
+          }
+          number = addToString(number, 2); // hour
+
+          if (Character.toString(ch).equals(":"))
+          {
+            endPosition++;
+            number += ch;
+            ch = source.read();
+          }
+          number = addToString(number, 2); // minute
+
+          if (Character.toString(ch).equals(":"))
+          {
+            endPosition++;
+            number += ch;
+            ch = source.read();
+          }
+          number = addToString(number, 2); // second
+        }
       } catch( Exception e ) {
         atEOF = true;
       }
-
       return newNumberToken( number, startPosition, endPosition, lineNumber );
     }
 
@@ -198,11 +369,6 @@ public class Lexer {
     return makeToken( op, startPosition, endPosition, lineNumber );
   }
 
-  public void printOutput (Lexer lex)
-  {
-
-  }
-
   public static void main(String [] args)
   {
     Token token;
@@ -221,7 +387,7 @@ public class Lexer {
         while (!lex.atEOF)
         {
           token = lex.nextToken();
-          
+
           System.out.printf("%-11s left:%-8d right:%-8d line:%-8d %s \n", token.toString(),
                   token.getLeftPosition(), token.getRightPosition(),
                   token.getLineNumber(), token.getKind());

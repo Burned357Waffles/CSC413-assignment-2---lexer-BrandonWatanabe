@@ -45,6 +45,8 @@ public class TokenType {
      tokens.put(Tokens.End, Symbol.symbol("end",Tokens.End));
      tokens.put(Tokens.In, Symbol.symbol("in",Tokens.In));
      tokens.put(Tokens.Utf16String, Symbol.symbol("utf16string",Tokens.Utf16String));
+     tokens.put(Tokens.Utf16StringLit, Symbol.symbol("<utf16string>",Tokens.Utf16StringLit));
      tokens.put(Tokens.TimestampType, Symbol.symbol("timestamp",Tokens.TimestampType));
+     tokens.put(Tokens.TimestampLit, Symbol.symbol("<timestamp>",Tokens.TimestampLit));
    }
 }

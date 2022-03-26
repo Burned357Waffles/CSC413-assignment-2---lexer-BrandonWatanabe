@@ -35,4 +35,6 @@ Begin begin
 End end
 In in
 Utf16String utf16string
+Utf16StringLit <utf16string>
 TimestampType timestamp
+TimestampLit <timestamp>
